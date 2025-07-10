@@ -13,59 +13,59 @@ print_lock = threading.Lock()
 
 # list of common service operations of the specified ports; can add more 
 COMMON_PORTS = {
-7: Echo (TCP/UDP)
+  7: Echo (TCP/UDP)
  	19: CHARGEN (TCP/UDP)
-21: FTP
-22: SSH
-23: Telnet
-25: SMTP
-37: Time (TCP/UDP)
-49: TACACS/TACACS+
-53: DNS
-67: DHCP (Server) (UDP)
-68: DHCP (Client) (UDP)
-69: TFTP (UDP)
-79: Finger
-80: HTTP
-88: Kerberos
-110: POP3
-111: RPCBind / Portmapper (Often used by NFS)
-123: NTP (UDP)
-135: RPC/EPMAP (Microsoft) (Remote Procedure Call)
-137: NetBIOS Name Service (NBNS) (UDP)
-138: NetBIOS Datagram Service (UDP)
-139: NetBIOS Session Service (SMB over NetBIOS)
-143: IMAP
-161: SNMP (UDP)
-162: SNMP Trap (UDP)
-194: IRC
-389: LDAP
-443: HTTPS
-445: SMB/CIFS (Microsoft-DS) (Direct SMB over TCP)
-465: SMTPS (SMTP over SSL/TLS - older, often 587 is used now)
-500: ISAKMP (IPsec VPN) (UDP)
-514: Syslog (UDP)
-587: SMTP Submission (TLS/SSL) (often for email client to server)
-631: IPP (Internet Printing Protocol)
-636: LDAPS (LDAP over SSL/TLS)
-902: VMware Server (Service Console) (Often for vCenter/ESXi management)
-993: IMAPS (IMAP over SSL/TLS)
-995: POP3S (POP3 over SSL/TLS)
-1080: Socks Proxy
-1194: OpenVPN (UDP)
-1433: Microsoft SQL Server
-1434: Microsoft SQL Monitor (UDP)
-1521: Oracle SQL
-1720: H.323 (VoIP)
-1723: PPTP (VPN)
-3128: Squid Proxy (HTTP)
-3306: MySQL
-3389: RDP (Remote Desktop Protocol)
-5432: PostgreSQL
-5900: VNC (Remote Desktop)
-8000: HTTP Alternate (often development/web servers)
-8080: HTTP Alternate (often web servers, proxies, or development)
-8443: HTTPS Alternate (often web servers or proxies)
+  21: FTP
+  22: SSH
+  23: Telnet
+  25: SMTP
+  37: Time (TCP/UDP)
+  49: TACACS/TACACS+
+  53: DNS
+  67: DHCP (Server) (UDP)
+  68: DHCP (Client) (UDP)
+  69: TFTP (UDP)
+  79: Finger
+  80: HTTP
+  88: Kerberos
+  110: POP3
+  111: RPCBind / Portmapper (Often used by NFS)
+  123: NTP (UDP)
+  135: RPC/EPMAP (Microsoft) (Remote Procedure Call)
+  137: NetBIOS Name Service (NBNS) (UDP)
+  138: NetBIOS Datagram Service (UDP)
+  139: NetBIOS Session Service (SMB over NetBIOS)
+  143: IMAP
+  161: SNMP (UDP)
+  162: SNMP Trap (UDP)
+  194: IRC
+  389: LDAP
+  443: HTTPS
+  445: SMB/CIFS (Microsoft-DS) (Direct SMB over TCP)
+  465: SMTPS (SMTP over SSL/TLS - older, often 587 is used now)
+  500: ISAKMP (IPsec VPN) (UDP)
+  514: Syslog (UDP)
+  587: SMTP Submission (TLS/SSL) (often for email client to server)
+  631: IPP (Internet Printing Protocol)
+  636: LDAPS (LDAP over SSL/TLS)
+  902: VMware Server (Service Console) (Often for vCenter/ESXi management)
+  993: IMAPS (IMAP over SSL/TLS)
+  995: POP3S (POP3 over SSL/TLS)
+  1080: Socks Proxy
+  1194: OpenVPN (UDP)
+  1433: Microsoft SQL Server
+  1434: Microsoft SQL Monitor (UDP)
+  1521: Oracle SQL
+  1720: H.323 (VoIP)
+  1723: PPTP (VPN)
+  3128: Squid Proxy (HTTP)
+  3306: MySQL
+  3389: RDP (Remote Desktop Protocol)
+  5432: PostgreSQL
+  5900: VNC (Remote Desktop)
+  8000: HTTP Alternate (often development/web servers)
+  8080: HTTP Alternate (often web servers, proxies, or development)
+  8443: HTTPS Alternate (often web servers or proxies)
 }
 
 # code to attempt to grab any banners by decoding the first 1024 bytes of the socket
